@@ -6,7 +6,7 @@ Made by Bryan Barbosa (Github: BryanCMBarbosa) from Federal University of Juiz d
 from vocoreGPIO import *
 
 class stepper:
-    def __init__(self, direction_pin, direction, step_pin, steps_per_revolution, enable_pin=39, enable_on=False, pulse_width=5, driver="drv8825", micro_stepping=1, micro_stepping_pins=()):
+    def __init__(self, direction_pin, direction, step_pin, steps_per_revolution, enable_pin = -1, enable_on=False, pulse_width=5, driver="drv8825", micro_stepping=1, micro_stepping_pins=()):
         self.direction_pin = direction_pin
         self.direction = direction
         self.step_pin = step_pin
@@ -24,7 +24,6 @@ class stepper:
     def setup_pins(self): #Initial pin setup for mode and state for direction, step and enable
         pinMode(self.direction_pin, True)
         pinMode(self.step_pin, True)
-        pinMode(self.enable_pin, True)
 
         if self.micro_stepping != 1 and len(self.micro_stepping_pins) != 0:
             for i in self.micro_stepping_pins: #Sets each of the micro stepping pins as OUTPUT
@@ -32,7 +31,10 @@ class stepper:
 
         digitalWrite(self.direction_pin, self.direction)
         digitalWrite(self.step_pin, False)
-        digitalWrite(self.enable_pin, self.enable_on)
+
+        if self.enable_pin != -1:
+            pinMode(self.enable_pin, True)
+            digitalWrite(self.enable_pin, self.enable_on)
 
     def turn_off_microstepping(self): #Turns off the pins attached to microstepping ports on driver
         if self.micro_stepping_on:
@@ -138,9 +140,12 @@ class stepper:
         digitalWrite(self.direction_pin, not digitalRead(self.direction_pin))
 
     def toggle_enable(self): #Toggle the enable pin state
-        digitalWrite(self.enable_pin, not digitalWrite(self.enable_pin))
+        if self.enable_pin != -1:
+            digitalWrite(self.enable_pin, not digitalWrite(self.enable_pin))
 
-        if digitalRead(self.enable_pin) == "1":
-            self.enable_on = True
+            if digitalRead(self.enable_pin) == "1":
+                self.enable_on = True
+            else:
+                self.enable_on = False
         else:
-            self.enable_on = False
+            print("Enable pin not defined.")
